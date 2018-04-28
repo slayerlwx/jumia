@@ -72,6 +72,10 @@ public class WebElementUtils {
                         return webElement;
                     }
                 }
+            }
+            //判断是否是以-为分隔符的, 如果是这种那就是需要循环调用的
+            else if (propertyValue.contains("-")) {
+
             } else {
                 //因为只有一个参数 直接解析即可
                 logger.info("解析成功,成功获取值：" + propertyValue);
@@ -222,29 +226,12 @@ public class WebElementUtils {
      * @return
      */
     public WebElement forDriverfindElement(WebDriver driver, By... bys) {
+        WebElement forwebElement = null;
         for (By by : bys) {
-            for (int i = 0; i < bys.length; i++) {
-                WebElement webElement = driver.findElement(by);
-                if (bys.length >1){
-
-                }
-            }
+            forwebElement = driver.findElement(by);
         }
-        return null;
+        return forwebElement;
     }
 
-    public static void main(String[] args) {
-        test();
-        test("aaa");
-        test("aaa", "bbb");
-        test("aaa", "bbb", "ccc");
-    }
-
-    public static void test(String... args) {
-        System.out.println(args.getClass());
-        for (String arg : args) {
-            System.out.println(arg);
-        }
-    }
 }
 

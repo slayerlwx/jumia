@@ -47,4 +47,13 @@ public interface Constant {
         String XPATH = "XPATH";
 
     }
+
+    interface Result {
+        String SUCCESS = "登录成功";
+        String FAILED = "登录异常";
+    }
+    interface ReceiveResult{
+        String RECEIVE_SUCCESS="评价成功";
+        String RECEIVE_FAILED="评价失败";
+    }
 }

@@ -38,12 +38,16 @@ public class WebElementUtils {
     /**
      * 获取抓到的元素
      */
+    /**
+     * 接收 by 类型多个参数
+     */
+    private By[] bys;
+
     private WebElement webElement;
     /**
      * 尝试次数
      */
     private int count;
-
     /**
      * 以括号进行分割,括号前面的内容来判断调用哪种方法,括号里面的为传入的值
      * By.xpath(),By.className(),By.cssSelector(),By.id(),By.linkText(),By.name(),By.partialLinkText(),By.tagName()
@@ -52,6 +56,70 @@ public class WebElementUtils {
      * @return
      */
     public WebElement findByElement(WebDriver driver, String propertyKey) {
+        WebElementUtils webElementUtils = new WebElementUtils();
+        String getElement = null;
+        String getForElement = null;
+        //思路 先把所有的元素存进list, 然后再取出其中的元素判断 是那种类型的   例子 ID(LoginForm_email)&CLASS(LoginForm_password)
+        property = Property.getProperties(is);
+        String propertyValue = property.getProperty(propertyKey);
+        if (!propertyValue.isEmpty()) {
+            if (propertyValue.contains(",")) {
+                // elemet 为解析出来的 元素和类型
+                String[] element = propertyValue.split(",");
+                for (int i = 0; i < element.length; i++) {
+                    //获取到的value 例子 ID(LoginForm_email)  需要对value进行处理 以括号分割
+
+                    getElement = element[i];
+                   logger.info("解析成功,成功获取key:" + propertyKey + ",对应的值:" + getElement);
+                    by = judgeType(getElement);
+
+                    webElement = webElementUtils.driverfindElement(by, driver);
+                    if (webElement != null) {
+                        return webElement;
+                    }
+                }
+            }
+            //判断是否是以-为分隔符的, 如果是这种那就是需要循环调用的
+            /*    else if (propertyValue.contains("#")) {
+                    // forelemet 为解析出来的 元素和类型
+                    String[] forelement = propertyValue.split("#");
+                    for (int i = 0; i < forelement.length; i++) {
+                        //获取到的value 例子 ID(LoginForm_email)  需要对value进行处理 以括号分割
+                        getForElement = forelement[i];
+                        logger.info("解析成功,成功获取key:" + propertyKey + ",对应的值:" + getForElement);
+
+                        by = judgeType(getForElement);
+                        bys[i] = by;
+
+                    }
+                    //调用循环方法
+                    webElement = webElementUtils.forDriverfindElement(driver, bys);
+                    if (webElement != null) {
+                        return webElement;
+                    }
+            }*/ else {
+                //因为只有一个参数 直接解析即可
+                logger.info("解析成功,成功获取key:" + propertyKey + ",对应的值:" + propertyValue);
+                by = judgeType(propertyValue);
+                webElement = webElementUtils.driverfindElement(by, driver);
+                if (webElement != null) {
+                    return webElement;
+                }
+            }
+        }
+        logger.error("找不到key:" + propertyKey + "对应的值为空");
+        return null;
+    }
+
+    /**
+     * 执行复元素
+     *
+     * @param driver
+     * @param propertyKey
+     * @param number
+     * @return
+     */
+    public WebElement findByElements(WebDriver driver, String propertyKey, int number) {
         WebElementUtils webElementUtils = new WebElementUtils();
         String getElement = null;
         //思路 先把所有的元素存进list, 然后再取出其中的元素判断 是那种类型的   例子 ID(LoginForm_email)&CLASS(LoginForm_password)
@@ -65,29 +133,79 @@ public class WebElementUtils {
                     //获取到的value 例子 ID(LoginForm_email)  需要对value进行处理 以括号分割
 
                     getElement = element[i];
-                    logger.info("解析成功,成功获取值:" + getElement);
+                    logger.info("解析成功,成功获取key:" + propertyKey + ",对应的值:" + getElement);
                     by = judgeType(getElement);
-                    webElement = webElementUtils.driverfindElement(by, driver);
+                    webElement = webElementUtils.driverfindElements(by, driver, number);
                     if (webElement != null) {
                         return webElement;
                     }
                 }
-            }
-            //判断是否是以-为分隔符的, 如果是这种那就是需要循环调用的
-            else if (propertyValue.contains("-")) {
-
             } else {
                 //因为只有一个参数 直接解析即可
-                logger.info("解析成功,成功获取值：" + propertyValue);
+                logger.info("解析成功,成功获取key:" + propertyKey + ",对应的值:" + propertyValue);
                 by = judgeType(propertyValue);
-                webElement = webElementUtils.driverfindElement(by, driver);
+                webElement = webElementUtils.driverfindElements(by, driver, number);
                 if (webElement != null) {
                     return webElement;
                 }
             }
         }
-        logger.error("找不到" + propertyValue + "，元素值");
+        logger.error("找不到key:" + propertyKey + "对应的值为空");
         return null;
+    }
+
+    /**
+     * 执行单元素定位
+     *
+     * @param by
+     * @param driver
+     * @return
+     */
+    public WebElement driverfindElement(By by, WebDriver driver) {
+        try {
+            webElement = driver.findElement(by);
+            return webElement;
+        } catch (Exception e) {
+            logger.info("找不到" + by.toString() + "的元素,进行第" + (++count) + "次尝试");
+            return null;
+        }
+    }
+
+    /**
+     * 执行复合元素定位
+     *
+     * @param by
+     * @param driver
+     * @return
+     */
+    public WebElement driverfindElements(By by, WebDriver driver, int number) {
+        try {
+            webElement = driver.findElements(by).get(number);
+            return webElement;
+        } catch (Exception e) {
+            logger.info("找不到" + by.toString() + "的元素,进行第" + (++count) + "次尝试");
+            return null;
+        }
+    }
+
+    /**
+     * 针对多次循环调用findbyelement方法
+     *
+     * @param driver
+     * @param bys
+     * @return
+     */
+    public WebElement forDriverfindElement(WebDriver driver, By... bys) {
+        WebElement forWebElement = null;
+        for (By by : bys) {
+            try {
+                forWebElement = driver.findElement(by);
+            } catch (Exception e) {
+                logger.info("找不到" + by.toString() + "的元素,进行第" + (++count) + "次尝试");
+                return null;
+            }
+        }
+        return forWebElement;
     }
 
     /**
@@ -140,98 +258,5 @@ public class WebElementUtils {
         }
         return by;
     }
-
-    /**
-     * 执行单元素定位
-     *
-     * @param by
-     * @param driver
-     * @return
-     */
-    public WebElement driverfindElement(By by, WebDriver driver) {
-        try {
-            webElement = driver.findElement(by);
-            return webElement;
-        } catch (Exception e) {
-            logger.info("找不到" + by.toString() + "元素,进行第" + (count++) + "次尝试");
-            return null;
-        }
-    }
-
-    /**
-     * 执行复合元素定位
-     *
-     * @param by
-     * @param driver
-     * @return
-     */
-    public WebElement driverfindElements(By by, WebDriver driver, int number) {
-        try {
-            webElement = driver.findElements(by).get(number);
-            return webElement;
-        } catch (Exception e) {
-            logger.info("找不到" + by.toString() + "元素,进行第" + (count++) + "次尝试");
-            return null;
-        }
-    }
-
-    /**
-     * 执行复元素
-     *
-     * @param driver
-     * @param propertyKey
-     * @param number
-     * @return
-     */
-    public WebElement findByElements(WebDriver driver, String propertyKey, int number) {
-        WebElementUtils webElementUtils = new WebElementUtils();
-        String getelement = null;
-        //思路 先把所有的元素存进list, 然后再取出其中的元素判断 是那种类型的   例子 ID(LoginForm_email)&CLASS(LoginForm_password)
-        property = Property.getProperties(is);
-        String propertyValue = property.getProperty(propertyKey);
-        if (!propertyValue.isEmpty()) {
-            if (propertyValue.contains(",")) {
-                // elemet 为解析出来的 元素和类型
-                String[] element = propertyValue.split(",");
-                for (int i = 0; i < element.length; i++) {
-                    //获取到的value 例子 ID(LoginForm_email)  需要对value进行处理 以括号分割
-
-                    getelement = element[i];
-                    logger.info("解析成功,成功获取值:" + getelement);
-                    by = judgeType(getelement);
-                    webElement = webElementUtils.driverfindElements(by, driver, number);
-                    if (webElement != null) {
-                        return webElement;
-                    }
-                }
-            } else {
-                //因为只有一个参数 直接解析即可
-                logger.info("解析成功,成功获取值：" + propertyValue);
-                by = judgeType(propertyValue);
-                webElement = webElementUtils.driverfindElements(by, driver, number);
-                if (webElement != null) {
-                    return webElement;
-                }
-            }
-        }
-        logger.error("找不到" + propertyValue + "，元素值");
-        return null;
-    }
-
-    /**
-     * 针对多次循环调用findbyelement方法
-     *
-     * @param driver
-     * @param bys
-     * @return
-     */
-    public WebElement forDriverfindElement(WebDriver driver, By... bys) {
-        WebElement forwebElement = null;
-        for (By by : bys) {
-            forwebElement = driver.findElement(by);
-        }
-        return forwebElement;
-    }
-
 }
 

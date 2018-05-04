@@ -16,10 +16,14 @@ import java.util.Properties;
 public class Property {
     private static Logger log = LoggerFactory.getLogger(Property.class);
 
-    //配置文件路径测试使用
-    //private static final String PROPERTYPATH = "src/main/java/config.properties";
+    /**
+     * 配置文件地址
+     */
+    private static final String WALMART_PROPERTY_PATH = "/config/walmart.properties";
+    private static final String JUMIA_PROPERTY_PATH = "/config/jumia.properties";
+    private static final String CDS_PROPERTY_PATH = "/config/cdiscount.properties";
+    private static final String SHOPEE_PROPERTY_PATH = "/config/shopee.properties";
 
-    public static String propertyPath = "/config/config.properties";
 
     /**
      * 读取配置文件
@@ -28,15 +32,14 @@ public class Property {
      * @throws FileNotFoundException
      */
     private static InputStream readFile() throws FileNotFoundException {
-        //return Property.class.getResourceAsStream(propertyPath);
-        //return new FileInputStream(new File(PROPERTYPATH));
-        return new FileInputStream(System.getProperty("user.dir") + propertyPath);
+        log.info("获取的配置文件为:" + CDS_PROPERTY_PATH);
+        return new FileInputStream(System.getProperty("user.dir") + CDS_PROPERTY_PATH);
     }
 
     /**
      * 获取property对象
      *
-     * @param inputStream
+     * @param is
      * @return
      */
     public static Properties getProperties(InputStream is) {
@@ -66,12 +69,12 @@ public class Property {
         return System.getProperty("user.dir").replaceAll("\\\\", "/");
     }
 
-    public static String getPropertyPath() {
-        return propertyPath;
+  /*  public static String getPropertyPath() {
+        return configPropertyPath;
     }
 
     public static void setPropertyPath(String propertyPath) {
-        Property.propertyPath = propertyPath;
-    }
+        Property.configPropertyPath = propertyPath;
+    }*/
 
 }
